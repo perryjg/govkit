@@ -33,6 +33,27 @@ module GovKit
   end
 
   module FollowTheMoney
+    class Candidate < FollowTheMoneyResource
+      def self.list( state = 'GA', year = '2010' 
+        next_page, result, page_num = "yes", [], 0
+
+        until next_page != "yes"
+          # puts "Getting batch number #{page_num}"
+
+          doc = get_xml("/candidates.list.php", :query => {:page => page_num, :state => state, :year => year })
+
+          next_page = doc.children.first.attributes['next_page'].value
+
+          page_num += 1
+
+          result += doc.search('//candidate').collect { |x| x.attributes }
+        end
+
+        stringify_values_of(result)
+        parse(result)
+      end
+    end
+
     class Business < FollowTheMoneyResource
       def self.list
         next_page, result, page_num = "yes", [], 0
