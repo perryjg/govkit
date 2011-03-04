@@ -34,7 +34,7 @@ module GovKit
 
   module FollowTheMoney
     class Candidate < FollowTheMoneyResource
-      def self.list( state = 'GA', year = '2010' 
+      def self.list( state = 'GA', year = '2010' )
         next_page, result, page_num = "yes", [], 0
 
         until next_page != "yes"
