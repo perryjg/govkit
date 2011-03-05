@@ -34,7 +34,7 @@ module GovKit
 
   module FollowTheMoney
     class Candidate < FollowTheMoneyResource
-      def self.list( *query )
+      def self.list( query )
         next_page, result, page_num = "yes", [], 0
 
         until next_page != "yes"
