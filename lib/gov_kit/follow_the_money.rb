@@ -40,7 +40,7 @@ module GovKit
 
         until next_page != "yes"
           puts "Getting batch number #{page_num}"
-          query.[:page] = page_num
+          query[:page] = page_num
           doc = get_xml("/candidates.list.php", :query => query )
           next_page = doc.children.first.attributes['next_page'].value
           page_num += 1
