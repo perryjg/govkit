@@ -1,4 +1,4 @@
-# Govkit
+# Govkit [![Build Status](https://secure.travis-ci.org/opengovernment/govkit.png)](http://travis-ci.org/opengovernment/govkit)
 
 Govkit is a Ruby gem that provides simple access to US open government APIs around the web, including:
 
@@ -19,6 +19,14 @@ From gemcutter:
 Add govkit to your environment.rb or Gemfile
 
 Run <code>rails generate govkit</code> (Rails 3.x) or <code>script/generate govkit</code> (Rails 2.x) to copy a config file into <code>config/initializers/govkit.rb</code>. You will need to add your API keys to this config file.
+
+Outside of Rails you can configure your API keys like so:
+
+    >> GovKit.configure do |config|
+    >>   config.sunlight_apikey   = 'YOUR_SUNLIGHT_API_KEY'
+    >>   config.votesmart_apikey  = 'YOUR_VOTESMART_API_KEY'
+    >>   config.ftm_apikey        = 'YOUR_FTM_API_KEY'
+    >> end
 
 # Usage Examples
 
@@ -58,10 +66,5 @@ For Canadian open government data, our friends up north have created a [govkit-c
 # A GovKit for your country?
 
 Let us know if you'd like to build a govkit for your region! We'd love to link to you. Your gem should be called, for example, govkit-uk (ISO 3166 country code), and your methods should live in the GovKit::GB namespace (for example).
-
-# TODOs
-
-  * Guaranteed Eachability: If an API call is expected to return zero or more records, then GovKit should always return an array or nil to the caller, not a single object, even if there's only one record returned in this particular API call.
-  * Migration & documentation for acts_as_noteworthy
 
 Copyright (c) 2010 Participatory Politics Foundation, released under the MIT license

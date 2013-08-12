@@ -1,35 +1,45 @@
-require 'uri'
-require 'net/http'
-
 module GovKit
   module SearchEngines
-    class GoogleNews
-      def self.search(options=[])
-        query = options.join('+')
-        host = GovKit::configuration.google_news_base_url
-        path = "/news?hl=en&ned=us&q=#{URI::encode(query)}&btnG=Search+News&num=50"
 
-        doc = Nokogiri::HTML(make_request(host, path))
-        stories = doc.search("div.search-results > div.story")
+    # Class to wrap access to Google News.
+    class GoogleNews
+
+      # Fetches stories about a topic from google news.
+      # Returns an array of GovKit::Mention objects.
+      #
+      # query: The query wanted For example:
+      # mentions = GoogleNews.search("Nancy Pelosi")
+      #
+      # options: Any additional parameters to the search. eg.:
+      # :geo => 'Texas' will add &geo=Texas to the URL.
+      # :num => 100 will show 100 results per page.
+      # 
+      def self.search(query=[], options={})
+        query = Array(query).join('+')
+        host = GovKit::configuration.google_news_base_url
+        options[:num] ||= 50
+
+        path = "/news?q=#{URI::encode(query)}&output=rss" + '&' + options.map { |k, v| URI::encode(k.to_s) + '=' + URI::encode(v.to_s) }.join('&')
+
+        doc = Nokogiri::XML(make_request(host, path))
 
         mentions = []
 
-        stories.each do |story|
+        doc.xpath('//item').each do |i|
           mention = GovKit::Mention.new
-
-          mention.title = story.at("h2.title a").text
-          mention.url = story.at("h2.title a").attributes["href"].value
-          mention.date = story.at("div.sub-title > span.date").text
-          mention.source = story.at("div.sub-title > span.source").text
-          mention.excerpt = story.at("div.body > div.snippet").text
+          mention.title = i.xpath('title').inner_text.split(" - ").first
+          mention.date = i.xpath('pubDate').inner_text
+          mention.excerpt = i.xpath('description').inner_text
+          mention.source = i.xpath('title').inner_text.split(" - ").last
+          mention.url = i.xpath('link').inner_text
 
           mentions << mention
         end
+
         mentions
       end
 
       def self.make_request(host, path)
-        puts host+path
         response = Net::HTTP.get(host, path)
       end
     end

@@ -1,5 +1,3 @@
-require 'govkit'
-
 module GovKit
   if defined? Rails::Railtie
     require 'rails'
@@ -12,6 +10,10 @@ module GovKit
     end
   end
 
+  # This class exists in order to run its insert method while
+  # Rails is loading.
+  # This then adds GovKit::ActsAsNoteworthy to ActiveRecord::Base.
+  # See http://api.rubyonrails.org/classes/Rails/Railtie.html
   class Railtie
     def self.insert
       ActiveRecord::Base.send(:include, GovKit::ActsAsNoteworthy)

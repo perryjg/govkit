@@ -22,10 +22,6 @@ begin
     gem.email = "develop@opencongress.org"
     gem.homepage = "http://github.com/opengovernment/govkit"
     gem.authors = ["Participatory Politics Foundation", "Srinivas Aki", "Carl Tashian"]
-    gem.add_dependency('httparty', '>= 0.5.2')
-    gem.add_dependency('json', '>= 1.4.3')
-    gem.add_dependency('nokogiri', '>= 1.4.4')
-    gem.add_dependency('fastercsv', '>= 1.5.3')
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
@@ -60,23 +56,43 @@ Rake::RDocTask.new do |rdoc|
 end
 
 
-if defined?(Spec)
+if defined?(RSpec)
   desc 'Test the govkit plugin.'
-  Spec::Rake::SpecTask.new('spec') do |t|
-    t.spec_files = FileList['spec/**/*_spec.rb']
-    t.spec_opts = ["-c"]
+  RSpec::Core::RakeTask.new('spec') do |t|
+    t.rspec_opts = ["-c"]
   end
 
   desc 'Test the govkit plugin with specdoc formatting and colors'
-  Spec::Rake::SpecTask.new('specdoc') do |t|
-    t.spec_files = FileList['spec/**/*_spec.rb']
-    t.spec_opts = ["--format specdoc", "-c"]
+  RSpec::Core::RakeTask.new('specdoc') do |t|
+    t.rspec_opts = ["--format specdoc", "-c"]
   end
 
   desc "Run all examples with RCov"
-  Spec::Rake::SpecTask.new('examples_with_rcov') do |t|
-    t.spec_files = FileList['spec/**/*_spec.rb']
+  RSpec::Core::RakeTask.new('examples_with_rcov') do |t|
     t.rcov = true
     t.rcov_opts = ['--exclude', 'spec,Library']
+  end
+end
+
+desc "Generate RSpec fixtures"
+task :generate_rspec_fixtures do |t,args|
+  if ENV['APIKEY'].nil?
+    abort "Usage: APIKEY=12345... rake generate_rspec_fixtures"
+  end
+
+  { "/legislators/XXL123456/" => '401.response',
+    "/metadata/ca/?apikey=#{ENV['APIKEY']}" => 'state.response',
+    "/bills/ca/20092010/lower/AB%20667/?apikey=#{ENV['APIKEY']}" => 'bill.response',
+    "/bills/?apikey=#{ENV['APIKEY']}&q=cooperatives" => 'bill_find.response',
+    "/bills/?apikey=#{ENV['APIKEY']}&updated_since=2012-11-01&state=tx" => 'bill_query.response',
+    "/legislators/CAL000088/?apikey=#{ENV['APIKEY']}" => 'legislator_find.response',
+    "/legislators/CAL999999/?apikey=#{ENV['APIKEY']}" => '404.response',
+    "/legislators/?apikey=#{ENV['APIKEY']}&state=ca" => 'legislator_query.response',
+    "/legislators/?apikey=#{ENV['APIKEY']}&state=zz" => '404.response',
+    "/committees/MDC000012/?apikey=#{ENV['APIKEY']}" => 'committee_find.response',
+    "/committees/?apikey=#{ENV['APIKEY']}&state=md&chamber=upper" => 'committee_query.response',
+  }.each do |path,basename|
+    filepath = File.expand_path("../spec/fixtures/open_states/#{basename}", __FILE__)
+    `curl -s -i -o #{filepath} "http://openstates.org/api/v1#{path}"`
   end
 end

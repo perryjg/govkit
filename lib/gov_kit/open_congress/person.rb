@@ -7,11 +7,9 @@ module GovKit
                     :name, :nickname, :osid, :party, :religion, :state, :title, :unaccented_name, :url, :user_approval,
                     :youtube_id, :oc_user_comments, :oc_users_tracking, :abstains_percentage, :with_party_percentage, :recent_news,
                     :recent_blogs, :person_stats
-    
+      
       def initialize(params)
-        params.each do |key, value|
-          instance_variable_set("@#{key}", value) if Person.instance_methods.include? key
-        end      
+        super Person, params
       end
     
       def self.find(params)
@@ -107,30 +105,31 @@ module GovKit
       def self.parse_results(result)
 
           people = []
-          result["people"].each do |person|
-          
-            these_recent_blogs = person["recent_blogs"]
-            blogs = []
-            these_recent_blogs.each do |trb|
-              blogs << BlogPost.new(trb)
+          if Hash === result
+            result["people"].each do |person|
+              person = person['person']
+
+              these_recent_blogs = person["recent_blogs"]
+              blogs = []
+              these_recent_blogs.each do |trb|
+                blogs << BlogPost.new(trb)
+              end
+              person["recent_blogs"] = blogs
+
+              these_recent_news = person["recent_news"]
+              news = []
+              these_recent_news.each do |trb|
+                news << NewsPost.new(trb)
+              end
+
+              person["person_stats"] = PersonStat.new(person["person_stats"]) if person["person_stats"]
+
+              person["recent_news"] = news
+
+              people << Person.new(person)
             end
+          end
 
-            person["recent_blogs"] = blogs
-
-
-            these_recent_news = person["recent_news"]
-            news = []
-            these_recent_news.each do |trb|
-              news << NewsPost.new(trb)
-            end
-          
-            person["person_stats"] = PersonStat.new(person["person_stats"]) if person["person_stats"]
-          
-            person["recent_news"] = news
-          
-            people << Person.new(person)
-          end      
-        
           people
             
       end    

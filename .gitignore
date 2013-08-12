@@ -16,4 +16,16 @@ tmtags
 ## PROJECT::GENERAL
 coverage
 rdoc
+pkg
+*.gem
+Gemfile.lock
+
 ## PROJECT::SPECIFIC
+spec/support/api_keys.rb
+
+## YARD
+doc
+.yardoc
+
+## RUBYMINE
+.idea

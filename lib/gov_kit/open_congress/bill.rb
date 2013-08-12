@@ -2,13 +2,11 @@ module GovKit
   module OpenCongress
     class Bill < OpenCongressObject
       attr_accessor :bill_type, :id, :introduced, :last_speech, :last_vote_date, :last_vote_roll, :last_vote_where, :last_action, :number, :plain_language_summary, :session, :sponsor, :co_sponsors, :title_full_common, :status, :most_recent_actions, :bill_titles, :recent_blogs, :recent_news, :ident
-    
+      
       def initialize(params)
-        params.each do |key, value|
-          instance_variable_set("@#{key}", value) if Bill.instance_methods.include? key
-        end      
+        super Bill, params
       end
-    
+      
       def ident
         "#{session}-#{bill_type}#{number}"
       end
@@ -125,46 +123,49 @@ module GovKit
       def self.parse_results(result)
       
         bills = []
-        result["bills"].each do |bill|
-        
-          these_recent_blogs = bill["recent_blogs"]
-          blogs = []
+        if Hash === result
+          result["bills"].each do |bill|
+            bill = bill['bill']
 
-          if these_recent_blogs
-            these_recent_blogs.each do |trb|
-              blogs << BlogPost.new(trb)
+            these_recent_blogs = bill["recent_blogs"]
+            blogs = []
+
+            if these_recent_blogs
+              these_recent_blogs.each do |trb|
+                blogs << BlogPost.new(trb)
+              end
             end
-          end
 
-          bill["recent_blogs"] = blogs
+            bill["recent_blogs"] = blogs
 
 
-          these_recent_news = bill["recent_news"]
-          news = []
-          if these_recent_news
-            these_recent_news.each do |trb|
-              news << NewsPost.new(trb)
+            these_recent_news = bill["recent_news"]
+            news = []
+            if these_recent_news
+              these_recent_news.each do |trb|
+                news << NewsPost.new(trb)
+              end
             end
-          end
 
-          bill["recent_news"] = news
+            bill["recent_news"] = news
 
-          these_co_sponsors = bill["co_sponsors"]
-          co_sponsors = []
-          if these_co_sponsors
-            these_co_sponsors.each do |tcs|
-              co_sponsors << Person.new(tcs)
+            these_co_sponsors = bill["co_sponsors"]
+            co_sponsors = []
+            if these_co_sponsors
+              these_co_sponsors.each do |tcs|
+                co_sponsors << Person.new(tcs)
+              end
             end
+
+            bill["co_sponsors"] = co_sponsors
+
+
+            bill["sponsor"] = Person.new(bill["sponsor"]) if bill["sponsor"]
+
+            bills << Bill.new(bill)
           end
-
-          bill["co_sponsors"] = co_sponsors
-
-        
-          bill["sponsor"] = Person.new(bill["sponsor"]) if bill["sponsor"]
-        
-        
-          bills << Bill.new(bill)
         end
+
         bills
       end
 
